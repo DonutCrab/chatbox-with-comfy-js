@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom Chat Box for Nayami</title>
+
+    <!-- ComfyJS dependency -->
+    <script src="https://cdn.jsdelivr.net/npm/comfy.js@latest/dist/comfy.min.js"></script>
+</head>
+
+<body>
+    <h1>Chat</h1>
+    <ul id="message-list">
+    </ul>
+</body>
+
+<script>
+    var messageList = document.getElementById("message-list")
+
+    ComfyJS.onChat = (user, message, flags, self, extra) => {
+        if (message.includes("<script>")) { return }
+
+        var outputMessage = message
+
+        if (extra.messageEmotes != null) {
+            const stringReplacements = []
+
+            Object.entries(extra.messageEmotes).forEach(([id, positions]) => {
+                const position = positions[0];
+                const [start, end] = position.split("-");
+                const stringToReplace = message.substring(
+                    parseInt(start, 10),
+                    parseInt(end, 10) + 1
+                );
+
+                stringReplacements.push({
+                    stringToReplace: stringToReplace,
+                    replacement: `<img src="https://static-cdn.jtvnw.net/emoticons/v2/${id}/default/dark/1.0">`,
+                });
+            });
+
+            outputMessage = stringReplacements.reduce(
+                (acc, { stringToReplace, replacement }) => {
+                    return acc.split(stringToReplace).join(replacement)
+                },
+                message
+            );
+        }
+
+        var newMessage = document.createElement("li")
+        newMessage.innerHTML = `${user}: ${outputMessage}`
+        messageList.append(newMessage)
+    }
+
+    ComfyJS.Init("nayami")
+</script>
+
+<style>
+    html {
+        margin: 0;
+
+        font-family: monospace;
+        background-color: transparent;
+    }
+
+    #message-list {
+        width: 300px;
+        height: 500px;
+
+        padding: 0;
+
+        list-style: none;
+        overflow-x: hidden;
+        display: flex;
+        flex-direction: column;
+        justify-content: end;
+    }
+</style>
+
+</html>
